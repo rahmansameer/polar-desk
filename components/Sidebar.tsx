@@ -1,4 +1,24 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const navItems = [
+  {
+    href: "/dashboard/projects",
+    label: "Projects",
+    icon: "assignment",
+  },
+  {
+    href: "/dashboard/massage",
+    label: "Massage",
+    icon: "mail",
+  },
+];
+
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="h-screen w-64 border-r border-default fixed left-0 top-0 bg-surface z-50 flex flex-col p-6 justify-between">
       <div className="space-y-8">
@@ -16,20 +36,34 @@ export default function Sidebar() {
         </div>
 
         <nav className="space-y-1">
-          <a className="flex items-center gap-3 px-3 py-2 font-semibold bg-blue-50 rounded-md transition-all active:scale-[0.98] cursor-pointer">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontVariationSettings: '"FILL" 1' }}
-            >
-              assignment
-            </span>
-            <span className="text-sm tracking-tight">Projects</span>
-          </a>
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href === "/dashboard/projects" &&
+                pathname === "/dashboard");
 
-          <a className="flex items-center gap-3 px-3 py-2 text-muted hover:bg-surface-2 rounded-lg transition-all">
-            <span className="material-symbols-outlined">mail</span>
-            <span className="text-sm tracking-tight">Messages</span>
-          </a>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-blue-50 text-black font-semibold"
+                    : "text-muted hover:bg-surface-2"
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontVariationSettings: isActive ? '"FILL" 1' : '"FILL" 0',
+                  }}
+                >
+                  {item.icon}
+                </span>
+                <span className="text-sm tracking-tight">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
