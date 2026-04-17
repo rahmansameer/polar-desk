@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
 import Sidebar from "../../../components/Sidebar";
 
 type ProgressItem = {
@@ -19,6 +25,7 @@ type Project = {
   status: "In Progress" | "Review" | "Completed";
   progressItems: ProgressItem[];
   progressPercent: number;
+  files: string[];
 };
 
 const defaultProjects: Project[] = [
@@ -56,6 +63,7 @@ const defaultProjects: Project[] = [
       },
     ],
     progressPercent: 50,
+    files: [],
   },
   {
     id: "ecommerce-flow",
@@ -91,6 +99,7 @@ const defaultProjects: Project[] = [
       },
     ],
     progressPercent: 50,
+    files: [],
   },
   {
     id: "ui-revamp",
@@ -126,6 +135,7 @@ const defaultProjects: Project[] = [
       },
     ],
     progressPercent: 100,
+    files: [],
   },
   {
     id: "landing-page-build",
@@ -161,6 +171,7 @@ const defaultProjects: Project[] = [
       },
     ],
     progressPercent: 25,
+    files: [],
   },
 ];
 
@@ -189,31 +200,56 @@ function buildEmptyProject(): Project {
     status: "In Progress",
     progressItems: [createProgressItem("Discovery & Brand Strategy")],
     progressPercent: 0,
+    files: [],
+  };
+}
+
+function normalizeProject(project: Partial<Project>): Project {
+  return {
+    id: project.id ?? createProjectId(),
+    name: project.name ?? "",
+    clientName: project.clientName ?? "",
+    clientEmail: project.clientEmail ?? "",
+    deadline: project.deadline ?? "",
+    status: project.status ?? "In Progress",
+    progressItems: project.progressItems ?? [
+      createProgressItem("Discovery & Brand Strategy"),
+    ],
+    progressPercent: project.progressPercent ?? 0,
+    files: project.files ?? [],
   };
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>(() => {
-    if (typeof window === "undefined") {
-      return defaultProjects;
-    }
+  const [projects, setProjects] = useState<Project[]>(defaultProjects);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [draftProject, setDraftProject] = useState<Project | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : defaultProjects;
+      if (stored) {
+        setProjects(
+          JSON.parse(stored).map((project: Partial<Project>) =>
+            normalizeProject(project),
+          ),
+        );
+      }
     } catch {
-      return defaultProjects;
+      setProjects(defaultProjects);
     }
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [draftProject, setDraftProject] = useState<Project | null>(null);
+  }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
   }, [projects]);
 
   const openProject = (project: Project) => {
-    setDraftProject(project);
+    setDraftProject(normalizeProject(project));
     setIsModalOpen(true);
   };
 
@@ -284,12 +320,54 @@ export default function ProjectsPage() {
     );
   };
 
+  const addFiles = (files: FileList | null) => {
+    if (!files || !draftProject) return;
+    const fileNames = Array.from(files).map((file) => file.name);
+    setDraftProject((current) =>
+      current
+        ? {
+            ...current,
+            files: Array.from(new Set([...current.files, ...fileNames])),
+          }
+        : current,
+    );
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    addFiles(event.target.files);
+    if (event.target) event.target.value = "";
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOver(false);
+    addFiles(event.dataTransfer.files);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragOver(false);
+  };
+
+  const draftProgressPercent = useMemo(() => {
+    if (!draftProject) return 0;
+    const total = draftProject.progressItems.length;
+    const complete = draftProject.progressItems.filter(
+      (item) => item.completedAt,
+    ).length;
+    return total === 0 ? 0 : Math.round((complete / total) * 100);
+  }, [draftProject]);
+
   const saveProject = () => {
     if (!draftProject) return;
 
     const updatedProject = {
       ...draftProject,
-      progressPercent: draftProject.progressPercent,
+      progressPercent: draftProgressPercent,
     };
 
     setProjects((current) => {
@@ -371,9 +449,6 @@ export default function ProjectsPage() {
                   </div>
                   <div>
                     <span className="text-sm font-medium">{project.name}</span>
-                    <p className="text-[11px] text-muted">
-                      {project.progressPercent}% complete
-                    </p>
                   </div>
                 </div>
                 <div className="col-span-4 text-sm text-muted">
@@ -486,35 +561,6 @@ export default function ProjectsPage() {
                           <option>Completed</option>
                         </select>
                       </div>
-
-                      <div className="col-span-2 md:col-span-1">
-                        <label className="text-xs text-muted">Progress</label>
-                        <div className="mt-2 flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={draftProject.progressPercent}
-                            onChange={(event) =>
-                              updateDraft({
-                                progressPercent: Number(event.target.value),
-                              })
-                            }
-                            className="h-2 w-full accent-[#3525CD]"
-                          />
-                          <span className="w-14 text-right text-sm font-semibold">
-                            {draftProject.progressPercent}%
-                          </span>
-                        </div>
-                        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-2">
-                          <div
-                            className="h-full rounded-full bg-[#3525CD]"
-                            style={{
-                              width: `${draftProject.progressPercent}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
                     </div>
 
                     <div className="space-y-4">
@@ -524,7 +570,7 @@ export default function ProjectsPage() {
                             Progress steps
                           </p>
                           <p className="text-xs text-muted">
-                            Add unlimited progress items and mark them complete.
+                            Add progress items and mark them complete.
                           </p>
                         </div>
                         <button
@@ -543,88 +589,105 @@ export default function ProjectsPage() {
                         {draftProject.progressItems.map((item) => (
                           <div
                             key={item.id}
-                            className="rounded-xl border border-default  p-4"
+                            className="flex items-center gap-3"
                           >
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                              <div className="flex items-start gap-3 flex-1">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    toggleProgressComplete(item.id)
-                                  }
-                                  className={`inline-flex h-10 w-10 items-center justify-center rounded-md border text-lg transition ${item.completedAt ? "border-[rgb(var(--success))] bg-[rgb(var(--success))/10] text-[rgb(var(--success))]" : "border-default bg-surface text-muted"}`}
-                                  aria-label={
-                                    item.completedAt
-                                      ? "Mark incomplete"
-                                      : "Mark complete"
-                                  }
-                                >
-                                  <span className="material-symbols-outlined text-base">
-                                    {item.completedAt
-                                      ? "check"
-                                      : "radio_button_unchecked"}
-                                  </span>
-                                </button>
+                            {/* Check Button */}
+                            <button
+                              type="button"
+                              onClick={() => toggleProgressComplete(item.id)}
+                              className={`inline-flex h-9 w-9 items-center justify-center rounded-md border text-lg transition ${
+                                item.completedAt
+                                  ? "border-[rgb(var(--success))] bg-[rgb(var(--success))/10] text-[rgb(var(--success))]"
+                                  : "border-default bg-surface text-muted"
+                              }`}
+                            >
+                              <span className="material-symbols-outlined text-base">
+                                {item.completedAt
+                                  ? "check"
+                                  : "radio_button_unchecked"}
+                              </span>
+                            </button>
 
-                                <div className="min-w-0 flex-1">
-                                  <input
-                                    value={item.name}
-                                    onChange={(event) =>
-                                      updateProgressItem(item.id, {
-                                        name: event.target.value,
-                                      })
-                                    }
-                                    placeholder="Step description"
-                                    className="mt-1 w-full border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
-                                  />
-                                </div>
-                              </div>
+                            {/* Step Name */}
+                            <input
+                              value={item.name}
+                              onChange={(e) =>
+                                updateProgressItem(item.id, {
+                                  name: e.target.value,
+                                })
+                              }
+                              placeholder="Progress step"
+                              className="flex-1 border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
+                            />
 
-                              <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                                <button
-                                  type="button"
-                                  onClick={() => removeProgressItem(item.id)}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] transition hover:bg-surface-2"
-                                  aria-label="Remove step"
-                                >
-                                  <span className="material-symbols-outlined text-base">
-                                    delete
-                                  </span>
-                                </button>
+                            {/* Date */}
+                            <input
+                              type="date"
+                              value={item.expectedDate}
+                              onChange={(e) =>
+                                updateProgressItem(item.id, {
+                                  expectedDate: e.target.value,
+                                })
+                              }
+                              className="w-[140px] border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
+                            />
 
-                                <div className="w-full min-w-40">
-                                  <label className="text-xs text-muted">
-                                    Expected date
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={item.expectedDate}
-                                    onChange={(event) =>
-                                      updateProgressItem(item.id, {
-                                        expectedDate: event.target.value,
-                                      })
-                                    }
-                                    className="mt-1 w-full border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="mt-3 rounded-md bg-white p-3 text-sm text-muted border border-default">
-                              {item.completedAt ? (
-                                <span className="font-medium text-[rgb(var(--success))]">
-                                  Completed on {item.completedAt}
-                                </span>
-                              ) : (
-                                <span>
-                                  In Progress — expected{" "}
-                                  {item.expectedDate || "date"}
-                                </span>
-                              )}
-                            </div>
+                            {/* Delete */}
+                            <button
+                              type="button"
+                              onClick={() => removeProgressItem(item.id)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] hover:bg-surface-2"
+                            >
+                              <span className="material-symbols-outlined text-base">
+                                delete
+                              </span>
+                            </button>
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    <div className="rounded-xl border border-default bg-surface-2 p-4">
+                      <h4 className="text-sm font-semibold">Attachments</h4>
+                      <div
+                        className={`mt-4 flex min-h-35 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-6 text-sm transition ${
+                          dragOver
+                            ? "border-[#3525CD] bg-surface"
+                            : "border-default bg-white"
+                        }`}
+                        onDrop={handleDrop}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                      >
+                        <p className="text-sm font-medium text-on-surface">
+                          Drag & drop files here
+                        </p>
+                        <p className="text-xs text-muted">
+                          or use the button below
+                        </p>
+                        <label className="rounded-md bg-[#3525CD] px-4 py-2 text-sm text-white cursor-pointer">
+                          Select files
+                          <input
+                            type="file"
+                            multiple
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+
+                      {draftProject.files.length > 0 ? (
+                        <div className="mt-4 space-y-2">
+                          {(draftProject.files ?? []).map((fileName) => (
+                            <div
+                              key={fileName}
+                              className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm border border-default"
+                            >
+                              <span className="truncate">{fileName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 
