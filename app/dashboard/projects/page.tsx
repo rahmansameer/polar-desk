@@ -391,9 +391,12 @@ function ProjectsContent() {
       }));
 
       if (stepsData.length > 0) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("project_steps")
-          .insert(stepsData);
+          .insert(stepsData)
+          .select();
+
+        console.log("STEPS INSERT RESULT:", data, error);
 
         if (error) console.error(error);
       }

@@ -12,9 +12,13 @@ async function getProjectData(token: string) {
   let projectId: string | null = null;
 
   const { data: magicLink } = await supabase
+
     .from("magic_links")
+
     .select("*")
+
     .eq("token", token)
+
     .maybeSingle();
 
   if (magicLink) {
@@ -30,36 +34,52 @@ async function getProjectData(token: string) {
   }
 
   const { data: project } = await supabase
+
     .from("projects")
+
     .select("*")
+
     .eq("id", projectId)
+
     .maybeSingle();
 
   if (!project) return null;
 
   const { data: steps } = await supabase
+
     .from("project_steps")
+
     .select("*")
+
     .eq("project_id", project.id)
-    .order("created_at", { ascending: true });
+
+    .order("id", { ascending: true });
 
   const { data: files } = await supabase
+
     .from("project_files")
+
     .select("*")
+
     .eq("project_id", project.id);
 
   return {
     project,
+
     steps: steps || [],
+
     files: files || [],
   };
 }
 
 function formatDate(date: string | null) {
   if (!date) return "";
+
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
+
     day: "numeric",
+
     year: "numeric",
   });
 }
@@ -72,6 +92,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
       <main className="pt-24 pb-12 px-6 max-w-7xl mx-auto min-h-screen">
         <div className="text-center py-20">
           <h1 className="text-2xl font-bold mb-4">Invalid Link</h1>
+
           <p className="text-muted">This project is not available.</p>
         </div>
       </main>
@@ -80,12 +101,13 @@ export default async function ClientPortalPage({ params }: PageProps) {
 
   const { steps, files } = data;
 
-  console.log("SERVER STEPS:", data?.steps);
-
   const completed = steps.filter((s) => !!s.completed_at);
+
   const progress = steps.length
     ? Math.round((completed.length / steps.length) * 100)
     : 0;
+
+  const firstIncompleteIndex = steps.findIndex((s) => !s.completed_at);
 
   return (
     <main className="pt-24 pb-12 px-6 max-w-7xl mx-auto min-h-screen">
@@ -109,6 +131,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
                 className="h-full rounded-full"
                 style={{
                   width: `${progress}%`,
+
                   background: "var(--gradient-primary)",
                 }}
               ></div>
@@ -118,9 +141,11 @@ export default async function ClientPortalPage({ params }: PageProps) {
               {steps.map((step, index) => {
                 const isCompleted = !!step.completed_at;
 
-                const isInProgress = !isCompleted && index === completed.length;
+                const isInProgress =
+                  firstIncompleteIndex !== -1 && index === firstIncompleteIndex;
 
-                const isFuture = !isCompleted && index > completed.length;
+                const isFuture =
+                  firstIncompleteIndex !== -1 && index > firstIncompleteIndex;
 
                 return (
                   <div
@@ -152,16 +177,13 @@ export default async function ClientPortalPage({ params }: PageProps) {
 
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm">{step.name}</h3>
+
                       <p className="text-xs text-muted mt-1">
                         {isCompleted && step.completed_at
                           ? `Completed on ${formatDate(step.completed_at)}`
-                          : isInProgress
-                            ? `In Progress${
-                                step.expected_date
-                                  ? ` · Expected ${formatDate(step.expected_date)}`
-                                  : ""
-                              }`
-                            : "Future Phase"}
+                          : step.expected_date
+                            ? `Expected ${formatDate(step.expected_date)}`
+                            : "Upcoming"}
                       </p>
                     </div>
                   </div>
@@ -175,6 +197,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
               <h2 className="text-xl font-extrabold tracking-tight">
                 Shared Files
               </h2>
+
               <button
                 type="button"
                 className="text-xs font-semibold text-primary hover:underline cursor-pointer"
@@ -196,6 +219,7 @@ export default async function ClientPortalPage({ params }: PageProps) {
                   <span className="text-sm font-semibold">
                     {file.file_name}
                   </span>
+
                   <span className="material-symbols-outlined text-muted">
                     download
                   </span>
