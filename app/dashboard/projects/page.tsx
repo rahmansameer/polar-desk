@@ -654,7 +654,7 @@ function ProjectsContent() {
             className="bg-[#3525CD] text-white px-4 py-3 cursor-pointer rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all"
           >
             <FontAwesomeIcon icon={faPlus} className="text-[18px]" />
-            New Project
+            <span className="hidden md:flex">New Project</span>
           </button>
         </header>
 
@@ -706,22 +706,24 @@ function ProjectsContent() {
                       </div>
                     </div>
 
-                    {/* client */}
-                    <div className="md:col-span-3">
-                      <p className="text-sm font-semibold text-gray-600">
-                        {project.clientName}
-                      </p>
-                    </div>
+                    <div className="flex items-center gap-3 md:contents">
+                      {/* client */}
+                      <div className="md:col-span-3">
+                        <p className="text-sm font-semibold text-gray-600">
+                          {project.clientName}
+                        </p>
+                      </div>
 
-                    {/* status */}
-                    <div className="md:col-span-2 font-medium">
-                      <span
-                        className={`inline-block text-xs px-2.5 py-1 rounded-md ${statusClass(
-                          project.status,
-                        )}`}
-                      >
-                        {project.status}
-                      </span>
+                      {/* status */}
+                      <div className="md:col-span-2 font-medium">
+                        <span
+                          className={`inline-block text-xs px-2.5 py-1 rounded-md ${statusClass(
+                            project.status,
+                          )}`}
+                        >
+                          {project.status}
+                        </span>
+                      </div>
                     </div>
 
                     {/* actions */}
