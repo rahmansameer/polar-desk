@@ -1052,8 +1052,8 @@ function ProjectsContent() {
         ) : null}
 
         {deletingId && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-300 px-4 py-2 rounded-lg z-999 flex items-center gap-4">
-            <p className="text-[12px] md:text-sm text-gray-800">
+          <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-auto max-w-[90%] sm:max-w-md bg-white border border-gray-300 px-3 sm:px-4 py-2.5 rounded-lg z-50 flex items-center justify-between gap-3">
+            <p className="text-[12px] sm:text-sm text-gray-800 truncate">
               Project deleted {countdown}s
             </p>
 
@@ -1062,7 +1062,6 @@ function ProjectsContent() {
                 if (deleteTimer) clearTimeout(deleteTimer);
                 if (deleteInterval) clearInterval(deleteInterval);
 
-                // project back
                 if (recentlyDeleted) {
                   setProjects((prev) => [recentlyDeleted, ...prev]);
                 }
@@ -1070,7 +1069,7 @@ function ProjectsContent() {
                 setRecentlyDeleted(null);
                 setDeletingId(null);
               }}
-              className="text-[12px] md:text-sm font-medium text-blue-600"
+              className="text-[12px] sm:text-sm font-medium text-blue-600 shrink-0"
             >
               Undo
             </button>
