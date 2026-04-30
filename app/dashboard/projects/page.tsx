@@ -1052,7 +1052,7 @@ function ProjectsContent() {
         ) : null}
 
         {deletingId && (
-          <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-auto max-w-[90%] sm:max-w-md bg-white border border-gray-300 px-3 sm:px-4 py-2.5 rounded-lg z-50 flex items-center justify-between gap-3">
+          <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-auto max-w-[90%] sm:max-w-md bg-white border border-gray-300 px-3 sm:px-4 py-2.5 rounded-lg z-999 flex items-center justify-between gap-3">
             <p className="text-[12px] sm:text-sm text-gray-800 truncate">
               Project deleted {countdown}s
             </p>
