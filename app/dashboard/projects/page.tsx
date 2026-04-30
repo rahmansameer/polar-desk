@@ -1064,9 +1064,9 @@ function ProjectsContent() {
         ) : null}
 
         {deletingId && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-300 px-4 py-2 rounded-lg flex items-center gap-4">
-            <p className="text-sm text-gray-800">
-              Project deleted • Undo within {countdown}s
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-300 px-4 py-2 rounded-lg z-999 flex items-center gap-4">
+            <p className="text-[12px] md:text-sm text-gray-800">
+              Project deleted {countdown}s
             </p>
 
             <button
@@ -1074,7 +1074,7 @@ function ProjectsContent() {
                 if (deleteTimer) clearTimeout(deleteTimer);
                 setDeletingId(null);
               }}
-              className="text-sm font-medium text-blue-600"
+              className="text-[12px] md:text-sm font-medium text-blue-600"
             >
               Undo
             </button>
