@@ -791,7 +791,7 @@ function ProjectsContent() {
                   </div>
 
                   <div className="p-5 space-y-6">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="gap-4 md:grid md:grid-cols-2">
                       <div className="col-span-2">
                         <label className="text-xs text-muted">
                           Project Name
@@ -880,7 +880,7 @@ function ProjectsContent() {
                           <span className="material-symbols-outlined text-base">
                             add
                           </span>
-                          Add step
+                          <span className="hidden md:flex">Add step</span>
                         </button>
                       </div>
 
@@ -888,12 +888,12 @@ function ProjectsContent() {
                         {draftProject.progressItems.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center gap-3"
+                            className="flex flex-wrap items-center gap-3"
                           >
                             <button
                               type="button"
                               onClick={() => toggleProgressComplete(item.id)}
-                              className={`inline-flex h-9 w-9 items-center justify-center rounded-md border text-lg transition ${
+                              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border text-lg transition ${
                                 item.completedAt
                                   ? "border-[rgb(var(--success))] bg-[rgb(var(--success))/10] text-[rgb(var(--success))]"
                                   : "border-default bg-surface text-muted"
@@ -914,29 +914,32 @@ function ProjectsContent() {
                                 })
                               }
                               placeholder="Progress step"
-                              className="flex-1 border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
+                              className="flex-1 min-w-0 border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
                             />
 
-                            <input
-                              type="date"
-                              value={item.expectedDate}
-                              onChange={(e) =>
-                                updateProgressItem(item.id, {
-                                  expectedDate: e.target.value,
-                                })
-                              }
-                              className="w-[140px] border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
-                            />
+                            {/* GROUP DATE + DELETE */}
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                              <input
+                                type="date"
+                                value={item.expectedDate}
+                                onChange={(e) =>
+                                  updateProgressItem(item.id, {
+                                    expectedDate: e.target.value,
+                                  })
+                                }
+                                className="flex-1 sm:flex-none sm:w-[140px] border border-default rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#3525CD]"
+                              />
 
-                            <button
-                              type="button"
-                              onClick={() => removeProgressItem(item.id)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] hover:bg-surface-2"
-                            >
-                              <span className="material-symbols-outlined text-base">
-                                delete
-                              </span>
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => removeProgressItem(item.id)}
+                                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] hover:bg-surface-2"
+                              >
+                                <span className="material-symbols-outlined text-base">
+                                  delete
+                                </span>
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
