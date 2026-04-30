@@ -5,7 +5,14 @@ import Sidebar from "../../../components/Sidebar";
 import AuthGuard from "../../../components/AuthGuard";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFolderOpen, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faFolderOpen,
+  faPlus,
+  faXmark,
+  faCheck,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { faCircle as faCircleRegular } from "@fortawesome/free-regular-svg-icons";
 
 type ProgressItem = {
   id: string;
@@ -786,7 +793,7 @@ function ProjectsContent() {
                       onClick={() => setIsModalOpen(false)}
                       className="cursor-pointer"
                     >
-                      <span className="material-symbols-outlined">close</span>
+                      <FontAwesomeIcon icon={faXmark} />
                     </button>
                   </div>
 
@@ -875,11 +882,9 @@ function ProjectsContent() {
                         <button
                           type="button"
                           onClick={addProgressItem}
-                          className="inline-flex items-center gap-2 rounded-md border border-default bg-surface px-3 py-2 text-xs font-medium transition hover:bg-surface-2"
+                          className="inline-flex items-center gap-2 rounded-md border border-default bg-surface px-3 py-2 text-xs font-medium transition hover:bg-surface-2 cursor-pointer"
                         >
-                          <span className="material-symbols-outlined text-base">
-                            add
-                          </span>
+                          <FontAwesomeIcon icon={faPlus} />
                           <span className="hidden md:flex">Add step</span>
                         </button>
                       </div>
@@ -899,11 +904,11 @@ function ProjectsContent() {
                                   : "border-default bg-surface text-muted"
                               }`}
                             >
-                              <span className="material-symbols-outlined text-base">
-                                {item.completedAt
-                                  ? "check"
-                                  : "radio_button_unchecked"}
-                              </span>
+                              <FontAwesomeIcon
+                                icon={
+                                  item.completedAt ? faCheck : faCircleRegular
+                                }
+                              />
                             </button>
 
                             <input
@@ -933,11 +938,9 @@ function ProjectsContent() {
                               <button
                                 type="button"
                                 onClick={() => removeProgressItem(item.id)}
-                                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] hover:bg-surface-2"
+                                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-default bg-surface text-[rgb(var(--error))] hover:bg-surface-2 cursor-pointer"
                               >
-                                <span className="material-symbols-outlined text-base">
-                                  delete
-                                </span>
+                                <FontAwesomeIcon icon={faTrash} />
                               </button>
                             </div>
                           </div>

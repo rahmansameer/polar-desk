@@ -21,7 +21,7 @@ export default function AuthPageShell({
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="card px-10 py-12 flex flex-col items-center">
+        <div className="card px-10 py-12 border border-default flex flex-col items-center">
           <div className="mb-10 flex items-center justify-center">
             <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-surface shadow-md overflow-hidden">
               <img
